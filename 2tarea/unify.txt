@@ -1,0 +1,53 @@
+Here is the unification algorithm presented in a clear, natural language pseudocode format, focusing on the logical steps and flow.
+
+## Unification Algorithm (Robinson's Original Version)
+
+The function **UNIFY($t_1, t_2$)** takes two terms, $t_1$ and $t_2$, and returns a result: **(Success/Failure, Substitution $\sigma$)**.
+
+***
+
+### Step 1: Base Cases (Handling Variables)
+
+If either $t_1$ or $t_2$ is a **variable** ($x$):
+
+1.  **Identify:** Let $x$ be the variable and $t$ be the other term.
+2.  **Trivial Case:** If $x$ and $t$ are the *same* term, return **(True, Empty Substitution)**.
+3.  **Occurs Check:** If $x$ appears anywhere inside the term $t$ (e.g., $x$ = $X$, $t$ = $f(X)$), return **(False, None)**. (This prevents infinite substitutions.)
+4.  **Substitution:** Otherwise, create the substitution $\{x \leftarrow t\}$ and return **(True, $\{x \leftarrow t\}$)**.
+
+***
+
+### Step 2: Complex Term Mismatch (Handling Functions)
+
+If both $t_1$ and $t_2$ are complex terms (functions) like $t_1 = f(x_1, \dots, x_n)$ and $t_2 = g(y_1, \dots, y_m)$:
+
+1.  **Header Check:**
+    * If the function symbols are different ($f \ne g$) OR
+    * If the number of arguments (arity) is different ($n \ne m$).
+    * Then, return **(False, None)**.
+
+***
+
+### Step 3: Recursive Unification (Matching Arguments)
+
+If the function symbols and arity match ($f = g$ and $n = m$):
+
+1.  **Initialize:** Set the overall substitution $\sigma$ to **$\emptyset$ (Empty)** and set **$k$ = 1** (argument index).
+2.  **Loop:** While the unification is still **Successful** and $k \le n$ (we haven't checked all arguments):
+    a.  **Prepare Terms:** Apply the current substitution $\sigma$ to the $k$-th arguments of $t_1$ and $t_2$:
+        * $x'_k \leftarrow \sigma(x_k)$
+        * $y'_k \leftarrow \sigma(y_k)$
+    b.  **Recursive Call:** Call UNIFY on the prepared arguments:
+        * $(\text{unifiable}, \tau) \leftarrow$ UNIFY($x'_k, y'_k$)
+    c.  **Update Substitution:**
+        * If $\text{unifiable}$ is **True**: Update the overall substitution by **composing** the new substitution $\tau$ with the existing $\sigma$:
+            $$\sigma \leftarrow \text{compose}(\tau, \sigma)$$
+        * If $\text{unifiable}$ is **False**: The entire process fails. Exit the loop.
+    d.  **Increment:** Move to the next argument: $k \leftarrow k+1$.
+3.  **Final Result:** Return the final result **(Success, $\sigma$)** based on whether the loop completed successfully.
+
+***
+
+### Step 4: Final Failure
+
+If the algorithm reaches this point, it means the terms are fundamentally incompatible (e.g., one is a function and the other is a constant, neither is a variable), so return **(False, None)**.
